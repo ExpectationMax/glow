@@ -1,4 +1,5 @@
 import numpy as np
+import tensorflow as tf
 
 
 def downsample(x, resolution):
@@ -32,7 +33,7 @@ def shard(data, shards, rank):
 
 def get_data(problem, shards, rank, data_augmentation_level, n_batch_train, n_batch_test, n_batch_init, resolution):
     if problem == 'mnist':
-        from keras.datasets import mnist
+        from tensorflow.keras.datasets import mnist
         (x_train, y_train), (x_test, y_test) = mnist.load_data()
         y_train = np.reshape(y_train, [-1])
         y_test = np.reshape(y_test, [-1])
@@ -40,10 +41,12 @@ def get_data(problem, shards, rank, data_augmentation_level, n_batch_train, n_ba
         x_train = np.lib.pad(x_train, ((0, 0), (2, 2), (2, 2)), 'minimum')
         # Pad with zeros to make 32x23
         x_test = np.lib.pad(x_test, ((0, 0), (2, 2), (2, 2)), 'minimum')
-        x_train = np.tile(np.reshape(x_train, (-1, 32, 32, 1)), (1, 1, 1, 3))
-        x_test = np.tile(np.reshape(x_test, (-1, 32, 32, 1)), (1, 1, 1, 3))
+        # x_train = np.tile(np.reshape(x_train, (-1, 32, 32, 1)), (1, 1, 1, 3))
+        # x_test = np.tile(np.reshape(x_test, (-1, 32, 32, 1)), (1, 1, 1, 3))
+        x_train = np.reshape(x_train, (-1, 32, 32, 1))
+        x_test = np.reshape(x_test, (-1, 32, 32, 1))
     elif problem == 'cifar10':
-        from keras.datasets import cifar10
+        from tensorflow.keras.datasets import cifar10
         (x_train, y_train), (x_test, y_test) = cifar10.load_data()
         y_train = np.reshape(y_train, [-1])
         y_test = np.reshape(y_test, [-1])
@@ -58,7 +61,7 @@ def get_data(problem, shards, rank, data_augmentation_level, n_batch_train, n_ba
 
     print('n_shard_train:', x_train.shape[0], 'n_shard_test:', x_test.shape[0])
 
-    from keras.preprocessing.image import ImageDataGenerator
+    from tensorflow.keras.preprocessing.image import ImageDataGenerator
     datagen_test = ImageDataGenerator()
     if data_augmentation_level == 0:
         datagen_train = ImageDataGenerator()

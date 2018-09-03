@@ -3,7 +3,8 @@ import tensorflow as tf
 import tfops as Z
 import optim
 import numpy as np
-import horovod.tensorflow as hvd
+# import horovod.tensorflow as hvd
+from train import hvd
 from tensorflow.contrib.framework.python.ops import add_arg_scope
 
 
@@ -143,7 +144,7 @@ def model(sess, hps, train_iterator, test_iterator, data_init):
     # Only for decoding/init, rest use iterators directly
     with tf.name_scope('input'):
         X = tf.placeholder(
-            tf.uint8, [None, hps.image_size, hps.image_size, 3], name='image')
+            tf.uint8, [None, hps.image_size, hps.image_size, 1], name='image')
         Y = tf.placeholder(tf.int32, [None], name='label')
         lr = tf.placeholder(tf.float32, None, name='learning_rate')
 

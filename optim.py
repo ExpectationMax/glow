@@ -1,7 +1,7 @@
 import tensorflow as tf
 import tfops as Z
-import horovod.tensorflow as hvd
-
+# import horovod.tensorflow as hvd
+from train import hvd
 # Optimizers
 
 '''

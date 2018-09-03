@@ -6,7 +6,7 @@ import os
 import sys
 import time
 
-import horovod.tensorflow as hvd
+# import horovod.tensorflow as hvd
 import numpy as np
 import tensorflow as tf
 import graphics
@@ -16,6 +16,28 @@ learn = tf.contrib.learn
 
 # Surpress verbose warnings
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+
+
+class hvd:
+    @staticmethod
+    def rank():
+        return 0
+
+    @staticmethod
+    def size():
+        return 1
+
+    @staticmethod
+    def local_rank():
+        return 0
+
+    @staticmethod
+    def init():
+        pass
+
+    @staticmethod
+    def broadcast_global_variables(junk):
+        return tf.no_op()
 
 
 def _print(*args, **kwargs):
@@ -91,8 +113,9 @@ def get_data(hps, sess):
 
     # Use anchor_size to rescale batch size based on image_size
     s = hps.anchor_size
-    hps.local_batch_train = hps.n_batch_train * \
-        s * s // (hps.image_size * hps.image_size)
+    hps.local_batch_train = hps.n_batch_train
+    # hps.local_batch_train = hps.n_batch_train * \
+    #     s * s // (hps.image_size * hps.image_size)
     hps.local_batch_test = {64: 50, 32: 25, 16: 10, 8: 5, 4: 2, 2: 2, 1: 1}[
         hps.local_batch_train]  # round down to closest divisor of 50
     hps.local_batch_init = hps.n_batch_init * \
@@ -339,7 +362,7 @@ if __name__ == "__main__":
                         default='', help="LSUN category")
     parser.add_argument("--data_dir", type=str, default='',
                         help="Location of data")
-    parser.add_argument("--dal", type=int, default=1,
+    parser.add_argument("--dal", type=int, default=0,
                         help="Data augmentation level: 0=None, 1=Standard, 2=Extra")
 
     # New dataloader params
@@ -350,7 +373,7 @@ if __name__ == "__main__":
 
     # Optimization hyperparams:
     parser.add_argument("--n_train", type=int,
-                        default=50000, help="Train epoch size")
+                        default=60000, help="Train epoch size")
     parser.add_argument("--n_test", type=int, default=-
                         1, help="Valid epoch size")
     parser.add_argument("--n_batch_train", type=int,
@@ -360,7 +383,7 @@ if __name__ == "__main__":
     parser.add_argument("--n_batch_init", type=int, default=256,
                         help="Minibatch size for data-dependent init")
     parser.add_argument("--optimizer", type=str,
-                        default="adamax", help="adam or adamax")
+                        default="adam", help="adam or adamax")
     parser.add_argument("--lr", type=float, default=0.001,
                         help="Base learning rate")
     parser.add_argument("--beta1", type=float, default=.9, help="Adam beta1")
@@ -373,9 +396,9 @@ if __name__ == "__main__":
     parser.add_argument("--epochs_warmup", type=int,
                         default=10, help="Warmup epochs")
     parser.add_argument("--epochs_full_valid", type=int,
-                        default=50, help="Epochs between valid")
+                        default=1, help="Epochs between valid")
     parser.add_argument("--gradient_checkpointing", type=int,
-                        default=1, help="Use memory saving gradients")
+                        default=0, help="Use memory saving gradients")
 
     # Model hyperparams:
     parser.add_argument("--image_size", type=int,
@@ -397,7 +420,7 @@ if __name__ == "__main__":
     parser.add_argument("--n_sample", type=int, default=1,
                         help="minibatch size for sample")
     parser.add_argument("--epochs_full_sample", type=int,
-                        default=50, help="Epochs between full scale sample")
+                        default=1, help="Epochs between full scale sample")
 
     # Ablation
     parser.add_argument("--learntop", action="store_true",
