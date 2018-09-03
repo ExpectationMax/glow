@@ -81,7 +81,7 @@ def init_visualizations(hps, model, logdir):
 
         for i in range(len(x_samples)):
             x_sample = np.reshape(
-                x_samples[i], (n_batch, hps.image_size, hps.image_size, 3))
+                x_samples[i], (n_batch, hps.image_size, hps.image_size, 1))
             graphics.save_raster(x_sample, logdir +
                                  'epoch_{}_sample_{}.png'.format(epoch, i))
 
